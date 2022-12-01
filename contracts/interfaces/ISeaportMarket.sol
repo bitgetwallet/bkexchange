@@ -16,10 +16,9 @@ import {
 } from "../lib/ConsiderationStructs.sol";
 
 interface ISeaportMarket {
-    // 结构体
     struct FulfillBasicOrderBuy {
         BasicOrderParameters basicOrderParameters;
-        uint currentPrice; // value, nft current price
+        uint currentPrice;
     }
 
     struct FulfillAdvancedOrderBuy {
@@ -27,7 +26,7 @@ interface ISeaportMarket {
         CriteriaResolver[] criteriaResolvers;
         bytes32 fulfillerConduitKey;
         address recipient;
-        uint currentPrice; // value, nft current price
+        uint currentPrice;
     }
 
     struct FulfillAvailableAdvancedOrdersBuy {
@@ -38,14 +37,11 @@ interface ISeaportMarket {
         bytes32 fulfillerConduitKey;
         address recipient;
         uint256 maximumFulfilled;
-        uint currentPrice; // value, nft current price
+        uint currentPrice;
     }
 
-    /// seaport接口
-    /// 填充基础订单
     function fulfillBasicOrder(BasicOrderParameters memory parameters) external payable returns (bool fulfilled);
 
-    /// 填充高级订单
     function fulfillAdvancedOrder(
         AdvancedOrder memory advancedOrder,
         CriteriaResolver[] memory criteriaResolvers,

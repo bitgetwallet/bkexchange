@@ -4,7 +4,6 @@ pragma solidity ^0.8.8;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-///@dev 交易市场管理器
 contract MarketRegistry is Ownable {
     event SetMarketProxy(
         uint indexed index,

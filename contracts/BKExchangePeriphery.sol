@@ -45,13 +45,11 @@ contract BKExchangePeriphery is BKCommon {
         _transferOwnership(_owner);
     }
 
-    // 设置bkswap合约地址
     function setBKSwapAddress(address _bkswap) external onlyOwner {
         bkswap = _bkswap;
         emit SetBKSwapAddress(msg.sender, _bkswap);
     }
 
-    // 设置市场注册器
     function setMarketRegistry(address _marketRegistry) external onlyOwner {
         marketRegistry = MarketRegistry(_marketRegistry);
         emit SetMarketRegistry(msg.sender, _marketRegistry);
@@ -87,10 +85,7 @@ contract BKExchangePeriphery is BKCommon {
         }
     }
 
-    /// @dev batch buy with eth
-    /// @param _tradeDetails trade details array
-    /// @param _userAddr user address dust tokens will return to
-    /// @param _requireAllSuccess require all trade to be success
+
     function batchBuyWithETH(
         TradeDetails[] calldata _tradeDetails,
         address _userAddr,
@@ -100,12 +95,6 @@ contract BKExchangePeriphery is BKCommon {
         _trade(_tradeDetails, _userAddr, _requireAllSuccess);
     }
 
-    /// @dev batch buy with tokens
-    /// @param _tradeDetails trade details array
-    /// @param _swapDetails details array for swap by bkswap
-    /// @param _allTokens erc20 tokens, including in and out
-    /// @param _userAddr user address that dust tokens will be returned to
-    /// @param _requireAllSuccess require all trades to be successful
     function batchBuyWithERC20s(
         TradeDetails[] calldata _tradeDetails,
         SwapDetails[] calldata _swapDetails,
@@ -113,13 +102,10 @@ contract BKExchangePeriphery is BKCommon {
         address _userAddr,
         bool _requireAllSuccess
     ) payable external handleDustERC20s(_allTokens, _userAddr) whenNotPaused nonReentrant {
-        // approve to max for all tokens
         _approveToSwap(_allTokens);
 
-        // swap to desired asset
         _swapToDesired(_swapDetails);
 
-        // trade NFT
         _trade(_tradeDetails, _userAddr, _requireAllSuccess);
     }
 
@@ -129,17 +115,13 @@ contract BKExchangePeriphery is BKCommon {
         bool _requireAllSuccess
     ) internal {
         for (uint256 i = 0; i < _tradeDetails.length; i++) {
-            // get market details
             (address _proxy, bool _isLib, bool _isActive) = marketRegistry.markets(_tradeDetails[i].marketId);
-            // market should be active
             require(_isActive, "_trade: InActive Market");
-            // execute trade (opensea ethereum contract)
-            // opensea v1 & v2 (ETH)
 
             (bool success, bytes data) = _isLib
                 ? _proxy.delegatecall(_tradeDetails[i].tradeData)
                 : _proxy.call{value:_tradeDetails[i].value}(_tradeDetails[i].tradeData);
-            // check if the call passed successfully
+
             if(_requireAllSuccess) _checkCallResult(success);
             if(!success){
                 emit TradeError(_userAddr, i, _tradeDetails[i], data);
@@ -147,7 +129,6 @@ contract BKExchangePeriphery is BKCommon {
         }
     }
 
-    /// @dev approve to swap for max amount
     function _approveToSwap(
         address[] calldata _allTokens
     ) internal {
@@ -156,14 +137,11 @@ contract BKExchangePeriphery is BKCommon {
         }
     }
 
-    /// @dev multi swap to desired asset
     function _swapToDesired(
         SwapDetails[] memory _swapDetails
     ) internal {
         for (uint256 i = 0; i < _swapDetails.length; i++) {
-            // swap to desired asset
             (bool success, ) = bkswap.call{value: _swapDetails[i].value}(_swapDetails[i].swapData);
-            // check if the call passed successfully
             _checkCallResult(success);
         }
     }
