@@ -18,7 +18,7 @@ contract BKCommon is IBKErrors, Ownable, Pausable, ReentrancyGuard {
     event RescueETH(address indexed recipient, uint256 amount);
     event RescueERC20(address indexed asset, address recipient);
     event RescueERC721(address indexed asset, address recipient, uint256[] ids);
-    event RescueERC1155(address indexed asset, address recipient, uint256[] calldata ids, uint256[] calldata amounts);
+    event RescueERC1155(address indexed asset, address recipient, uint256[] ids, uint256[] amounts);
 
     event SetOperator(address operator, bool isOperator);
 

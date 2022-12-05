@@ -118,7 +118,7 @@ contract BKExchangePeriphery is BKCommon {
             (address _proxy, bool _isLib, bool _isActive) = marketRegistry.markets(_tradeDetails[i].marketId);
             require(_isActive, "_trade: InActive Market");
 
-            (bool success, bytes data) = _isLib
+            (bool success, bytes memory data) = _isLib
                 ? _proxy.delegatecall(_tradeDetails[i].tradeData)
                 : _proxy.call{value:_tradeDetails[i].value}(_tradeDetails[i].tradeData);
 
@@ -133,7 +133,7 @@ contract BKExchangePeriphery is BKCommon {
         address[] calldata _allTokens
     ) internal {
         for (uint256 i = 0; i < _allTokens.length; i++) {
-            TransferHelper.approveMax(_allTokens[i], bkswap, type(uint256).max);
+            TransferHelper.approveMax(IERC20(_allTokens[i]), bkswap, type(uint256).max);
         }
     }
 
