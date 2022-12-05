@@ -51,7 +51,7 @@ contract BKCommon is IBKErrors, Ownable, Pausable, ReentrancyGuard {
     }
     // Emergency function: In case any ERC721 tokens get stuck in the contract unintentionally
     // Only owner can retrieve the asset balance to a recipient address
-    function rescueERC721(address asset, uint256[] calldata ids, address recipient) onlyOwner external {
+    function rescueERC721(address asset, uint256[] calldata ids, address recipient) onlyOperator external {
         for (uint256 i = 0; i < ids.length; i++) {
             IERC721(asset).safeTransferFrom(address(this), recipient, ids[i]);
         }
@@ -60,7 +60,7 @@ contract BKCommon is IBKErrors, Ownable, Pausable, ReentrancyGuard {
 
     // Emergency function: In case any ERC1155 tokens get stuck in the contract unintentionally
     // Only owner can retrieve the asset balance to a recipient address
-    function rescueERC1155(address asset, uint256[] calldata ids, uint256[] calldata amounts, address recipient) onlyOwner external {
+    function rescueERC1155(address asset, uint256[] calldata ids, uint256[] calldata amounts, address recipient) onlyOperator external {
         for (uint256 i = 0; i < ids.length; i++) {
             IERC1155(asset).safeTransferFrom(address(this), recipient, ids[i], amounts[i], "");
         }
