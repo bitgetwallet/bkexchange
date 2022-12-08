@@ -18,6 +18,7 @@ contract BKExchangeRouter is BKCommon{
     whenNotPaused
     nonReentrant
     {
+        require(_tokenIns.length == _amountIns.length, "_tokenIns and _amountIns length mismatched");
         for (uint256 i = 0; i < _tokenIns.length; i++) {
             TransferHelper.safeTransferFrom(
                 _tokenIns[i],

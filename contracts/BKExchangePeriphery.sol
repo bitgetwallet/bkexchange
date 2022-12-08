@@ -55,44 +55,15 @@ contract BKExchangePeriphery is BKCommon {
         emit SetMarketRegistry(msg.sender, _marketRegistry);
     }
 
-    modifier handleDustETH(address _userAddr) {
-        _;
-
-        uint256 newBalance = address(this).balance;
-        if(newBalance > 0){
-            TransferHelper.safeTransferETH(_userAddr, newBalance);
-        }
-    }
-
-    modifier handleDustERC20s(address[] calldata _allTokens, address _userAddr) {
-        _;
-
-        uint256 newBalance = address(this).balance;
-        if (newBalance > 0) {
-            TransferHelper.safeTransferETH(_userAddr, newBalance);
-        }
-
-        for (uint256 i = 0; i < _allTokens.length; i++) {
-            uint256 erc20NewBalance = IERC20(_allTokens[i]).balanceOf(address(this));
-
-            if(erc20NewBalance > 0){
-                TransferHelper.safeTransfer(
-                    _allTokens[i],
-                    _userAddr,
-                    erc20NewBalance
-                );
-            }
-        }
-    }
-
 
     function batchBuyWithETH(
         TradeDetails[] calldata _tradeDetails,
         address _userAddr,
         bool _requireAllSuccess
-    ) payable external handleDustETH(_userAddr) whenNotPaused nonReentrant {
+    ) payable external whenNotPaused nonReentrant {
         // trade
         _trade(_tradeDetails, _userAddr, _requireAllSuccess);
+        _handleDustETH(_userAddr);
     }
 
     function batchBuyWithERC20s(
@@ -101,20 +72,24 @@ contract BKExchangePeriphery is BKCommon {
         address[] calldata _allTokens,
         address _userAddr,
         bool _requireAllSuccess
-    ) payable external handleDustERC20s(_allTokens, _userAddr) whenNotPaused nonReentrant {
+    ) payable external whenNotPaused nonReentrant {
         _approveToSwap(_allTokens);
 
         _swapToDesired(_swapDetails);
 
         _trade(_tradeDetails, _userAddr, _requireAllSuccess);
+
+        _handleDustETH(_userAddr);
+        _handleDustERC20s(_allTokens, _userAddr);
     }
 
     function _trade(
-        TradeDetails[] memory _tradeDetails,
+        TradeDetails[] calldata _tradeDetails,
         address _userAddr,
         bool _requireAllSuccess
     ) internal {
         for (uint256 i = 0; i < _tradeDetails.length; i++) {
+            require(_tradeDetails[i].marketId < marketRegistry.marketsLength(), "_trade: Invalid MarketId");
             (address _proxy, bool _isLib, bool _isActive) = marketRegistry.markets(_tradeDetails[i].marketId);
             require(_isActive, "_trade: InActive Market");
 
@@ -122,10 +97,10 @@ contract BKExchangePeriphery is BKCommon {
                 ? _proxy.delegatecall(_tradeDetails[i].tradeData)
                 : _proxy.call{value:_tradeDetails[i].value}(_tradeDetails[i].tradeData);
 
-            if(_requireAllSuccess) _checkCallResult(success);
-            if(!success){
+            if (!success) {
                 emit TradeError(_userAddr, i, _tradeDetails[i], data);
             }
+            if(_requireAllSuccess) _checkCallResult(success);
         }
     }
 
@@ -133,16 +108,38 @@ contract BKExchangePeriphery is BKCommon {
         address[] calldata _allTokens
     ) internal {
         for (uint256 i = 0; i < _allTokens.length; i++) {
-            TransferHelper.approveMax(IERC20(_allTokens[i]), bkswap, type(uint256).max);
+            // use type(uint256).max/2 as amount to ensure the approval will happen only once
+            TransferHelper.approveMax(IERC20(_allTokens[i]), bkswap, type(uint256).max/2);
         }
     }
 
     function _swapToDesired(
-        SwapDetails[] memory _swapDetails
+        SwapDetails[] calldata _swapDetails
     ) internal {
         for (uint256 i = 0; i < _swapDetails.length; i++) {
             (bool success, ) = bkswap.call{value: _swapDetails[i].value}(_swapDetails[i].swapData);
             _checkCallResult(success);
+        }
+    }
+
+    function _handleDustETH(address _userAddr) internal {
+        uint256 newBalance = address(this).balance;
+        if (newBalance > 0) {
+            TransferHelper.safeTransferETH(_userAddr, newBalance);
+        }
+    }
+
+    function _handleDustERC20s(address[] calldata _allTokens, address _userAddr) internal {
+        for (uint256 i = 0; i < _allTokens.length; i++) {
+            uint256 erc20NewBalance = IERC20(_allTokens[i]).balanceOf(address(this));
+
+            if (erc20NewBalance > 0) {
+                TransferHelper.safeTransfer(
+                    _allTokens[i],
+                    _userAddr,
+                    erc20NewBalance
+                );
+            }
         }
     }
 

@@ -18,11 +18,16 @@ contract MarketRegistry is Ownable {
     Market[] public markets;
 
     constructor(address[] memory proxies, bool[] memory isLibs, address _owner) {
+        require(proxies.length == isLibs.length,"proxies and isLibs length mismatched");
         for (uint256 i = 0; i < proxies.length; i++) {
             markets.push(Market(proxies[i], isLibs[i], true));
             emit SetMarketProxy(i, Market(proxies[i], isLibs[i], true));
         }
         _transferOwnership(_owner);
+    }
+
+    function marketsLength() view public returns (uint256){
+        return markets.length;
     }
 
     function addMarket(address proxy, bool isLib) external onlyOwner {

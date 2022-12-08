@@ -8,8 +8,9 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "./interfaces/IBKErrors.sol";
+import "./interfaces/IBKCommon.sol";
 
-contract BKCommon is IBKErrors, Ownable, Pausable, ReentrancyGuard {
+contract BKCommon is IBKCommon, IBKErrors, Ownable, Pausable, ReentrancyGuard {
 
     using SafeERC20 for IERC20;
 
@@ -61,6 +62,8 @@ contract BKCommon is IBKErrors, Ownable, Pausable, ReentrancyGuard {
     // Emergency function: In case any ERC1155 tokens get stuck in the contract unintentionally
     // Only owner can retrieve the asset balance to a recipient address
     function rescueERC1155(address asset, uint256[] calldata ids, uint256[] calldata amounts, address recipient) onlyOperator external {
+        require(ids.length == amounts.length, "ids and amounts length mismatched");
+
         for (uint256 i = 0; i < ids.length; i++) {
             IERC1155(asset).safeTransferFrom(address(this), recipient, ids[i], amounts[i], "");
         }
