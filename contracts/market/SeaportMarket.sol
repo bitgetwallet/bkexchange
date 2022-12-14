@@ -37,32 +37,8 @@ interface ISeaport {
 
 }
 
-interface IERC20 {
-    function transfer(address to, uint256 amount) external returns (bool);
-    function balanceOf(address account) external view returns (uint256);
-}
-
-interface IERC721 {
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 id
-    ) external;
-}
-
-interface IERC1155 {
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 id,
-        uint256 amount,
-        bytes calldata data
-    ) external;
-}
-
 library SeaportMarket {
     address public constant SEAPORT1_1 = 0x00000000006c3852cbEf3e08E8dF289169EdE581;
-    address public constant Owner = 0x5DEFa9C83085c7F606CEB3B5f75Fc107945ed7de;
 
     struct FulfillAdvancedOrderBuy {
         AdvancedOrder advancedOrder;
