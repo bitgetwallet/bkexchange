@@ -20,6 +20,7 @@ contract MarketRegistry is Ownable {
     constructor(address[] memory proxies, bool[] memory isLibs, address _owner) {
         require(proxies.length == isLibs.length,"proxies and isLibs length mismatched");
         for (uint256 i = 0; i < proxies.length; i++) {
+            require(proxies[i] != address(0), "proxy cannot be zero address");
             markets.push(Market(proxies[i], isLibs[i], true));
             emit SetMarketProxy(i, Market(proxies[i], isLibs[i], true));
         }
@@ -31,6 +32,7 @@ contract MarketRegistry is Ownable {
     }
 
     function addMarket(address proxy, bool isLib) external onlyOwner {
+        require(proxy != address(0), "proxy cannot be zero address");
         markets.push(Market(proxy, isLib, true));
         emit SetMarketProxy(markets.length - 1, Market(proxy, isLib, true));
     }
@@ -42,6 +44,7 @@ contract MarketRegistry is Ownable {
     }
 
     function setMarketProxy(uint256 marketId, address newProxy, bool isLib) external onlyOwner {
+        require(newProxy != address(0), "newProxy cannot be zero address");
         Market storage market = markets[marketId];
         market.proxy = newProxy;
         market.isLib = isLib;

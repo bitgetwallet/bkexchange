@@ -96,6 +96,7 @@ library SeaportMarket {
         FulfillAvailableAdvancedOrdersBuy calldata fulfillAvailableAdvancedOrdersBuy,
         bool _revertIfTrxFails
     ) internal {
+        require(fulfillAvailableAdvancedOrdersBuy.recipient != address(0), "recipient cannot be zero address");
         bytes memory _data = abi.encodeWithSelector(
             ISeaport.fulfillAvailableAdvancedOrders.selector,
             fulfillAvailableAdvancedOrdersBuy.advancedOrders,
@@ -131,6 +132,7 @@ library SeaportMarket {
         FulfillAdvancedOrderBuy calldata fulfillAdvancedOrderBuy,
         bool _revertIfTrxFails
     ) internal {
+        require(fulfillAdvancedOrderBuy.recipient != address(0), "recipient cannot be zero address");
         bytes memory _data = abi.encodeWithSelector(
             ISeaport.fulfillAdvancedOrder.selector,
             fulfillAdvancedOrderBuy.advancedOrder,
