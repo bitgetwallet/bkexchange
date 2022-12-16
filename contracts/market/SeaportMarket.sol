@@ -4,13 +4,9 @@ pragma solidity ^0.8.8;
 
 // prettier-ignore
 import {
-    OrderComponents,
-    Fulfillment,
     FulfillmentComponent,
     Execution,
-    Order,
     AdvancedOrder,
-    OrderStatus,
     CriteriaResolver
 } from "../lib/ConsiderationStructs.sol";
 
